@@ -1,10 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { supabase } from '@/services/supabase'
 import { tomarFoto } from '@/composables/useCamera'
 import { obtenerMisFotos } from '@/composables/useFotos'
 import { subirFotoYGuardarBase } from '@/composables/useUpload'
+import { supabase } from '@/services/supabase'
 import AdminPanel from '@/views/AdminPanel.vue'
+import { onMounted, ref } from 'vue'
 
 const foto = ref(null)              // Preview base64
 const mensaje = ref('')
@@ -56,28 +56,33 @@ const tomarYGuardar = async () => {
 
 // Al iniciar
 onMounted(async () => {
-  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
   if (!currentUser) return
 
   user.value = currentUser
+  console.log('🧑 Usuario actual:', currentUser)
 
-  const { data } = await supabase
+  const { data: perfil, error: rolError } = await supabase
     .from('users')
     .select('rol')
     .eq('id', currentUser.id)
     .single()
-  rol.value = data?.rol || ''
+
+  console.log('🎭 Rol cargado:', perfil, rolError)
+
+  rol.value = perfil?.rol || ''
 
   fotos.value = await obtenerMisFotos()
   await cargarTareas()
   cargando.value = false
 })
+
 </script>
 
 <template>
   <div class="p-4">
     <!-- Info del usuario -->
-    <p v-if="user" class="text-xs text-gray-500">👤 Usuario ID: {{ user.id }}</p>
+    <p v-if="user" class="text-xs text-gray-500">👤 Usuario ID: {{ user.id }} Rol: {{ rol }}</p>
     <p v-if="rol && rol !== 'admin'" class="text-xs text-blue-500">📎 Usuario subordinado</p>
 
     <!-- Panel solo para administrador -->

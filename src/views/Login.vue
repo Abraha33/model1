@@ -10,10 +10,13 @@ const intentosFallidos = ref(0)
 const router = useRouter()
 
 const login = async () => {
-  const { error } = await supabase.auth.signInWithPassword({
+  let { data, error } = await supabase.auth.signInWithPassword({
     email: email.value,
     password: password.value
   })
+  
+
+
 
   if (error) {
     intentosFallidos.value++
